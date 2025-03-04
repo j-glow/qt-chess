@@ -1,5 +1,7 @@
 #include "king.h"
 
+#include <QPoint>
+
 King::King(Color color) : Figure(color) {}
 
 QVector<QString> King::availableMoves(const QString& position) const {
@@ -10,7 +12,7 @@ QVector<QString> King::availableMoves(const QString& position) const {
     int rank = position[1].digitValue();
 
     // Define possible moves (relative to the current position)
-    QVector<QPair<int,int>> moveOffsets = {
+    QVector<QPoint> moveOffsets = {
         {-1, -1}, {-1, 0}, {-1, 1},
         {0, -1},          {0, 1},
         {1, -1}, {1, 0}, {1, 1}
@@ -19,8 +21,8 @@ QVector<QString> King::availableMoves(const QString& position) const {
     // Iterate through possible moves
     for (const auto& offset : moveOffsets) {
         // Calculate the new file and rank
-        char newFile = file + offset.first;
-        int newRank = rank + offset.second;
+        char newFile = file + offset.x();
+        int newRank = rank + offset.y();
 
         // Check if the new position is within the board bounds
         if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
