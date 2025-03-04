@@ -12,6 +12,7 @@ qt_add_executable(Chess
     interface.h
     interface.ui
     figure.h figure.cpp
+    king.h king.cpp
 )
 
 target_link_libraries(Chess
