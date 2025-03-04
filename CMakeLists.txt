@@ -15,6 +15,7 @@ qt_add_executable(Chess
     king.h king.cpp
     queen.h queen.cpp
     bishop.h bishop.cpp
+    rook.h rook.cpp
 )
 
 target_link_libraries(Chess
