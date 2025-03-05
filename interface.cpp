@@ -44,10 +44,10 @@ void Interface::initializeChessboard()
 {
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
-            m_squares[row][col] = new QLabel(this);
-            m_squares[row][col]->setMinimumSize(60, 60); // Set minimum square size
-            m_squares[row][col]->setAlignment(Qt::AlignCenter); // Center the content
-            m_squares[row][col]->setFrameStyle(QFrame::Panel | QFrame::Sunken); // Set square border style
+            m_squares[row][col] = new ChessSquare(this);
+            m_squares[row][col]->setMinimumSize(60, 60);
+            m_squares[row][col]->setAlignment(Qt::AlignCenter);
+            m_squares[row][col]->setFrameStyle(QFrame::Panel | QFrame::Sunken);
             m_chessboardLayout->addWidget(m_squares[row][col], row, col);
 
             // Set background color (chessboard pattern)
@@ -57,11 +57,10 @@ void Interface::initializeChessboard()
                 m_squares[row][col]->setStyleSheet("background-color: lightgray;");
             }
 
-            // Connect click signal
-            connect(m_squares[row][col], &QLabel::mousePressEvent, [this, row, col](QMouseEvent* event){
-                Q_UNUSED(event); // Avoid unused variable warning
-                this->squareClicked();
-            });
+            // Connect the custom signal
+            QString position = QString(QChar('a' + col)) + QString::number(8 - row);
+            m_squares[row][col]->setPosition(position); // Set the position
+            connect(m_squares[row][col], &ChessSquare::squareClicked, this, &Interface::squareClicked);
         }
     }
 }
@@ -70,26 +69,25 @@ void Interface::updateChessboard()
 {
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
-            QString position = getPositionFromSquare(m_squares[row][col]);
-            Figure* figure = m_game.m_chessboard.getFigureAt(position); // Get the figure at the position
+            QString position = m_squares[row][col]->position();
+            Figure* figure = m_game.getFigureAt(position);
             if (figure) {
-                QString iconPath = ":/icons/"; // Path to your icon resources (adjust as needed)
-                iconPath += QString::fromStdString(figure->getColor() == Color::WHITE ? "w" : "b"); // Figure color
-                iconPath += QString::fromStdString(figure->getTypeString()) + ".png"; // Figure type (e.g., "pawn", "rook")
-                m_squares[row][col]->setPixmap(QPixmap(iconPath).scaled(QSize(50, 50), Qt::KeepAspectRatio)); // Display the icon
+                QString iconPath = ":/icons/";
+                iconPath += QString::fromStdString(figure->getColor() == Color::WHITE ? "w" : "b");
+                iconPath += figure->getTypeString() + ".png";
+                m_squares[row][col]->setPixmap(QPixmap(iconPath).scaled(QSize(50, 50), Qt::KeepAspectRatio));
             } else {
-                m_squares[row][col]->clear(); // Clear the square if there's no figure
+                m_squares[row][col]->clear();
             }
         }
     }
 }
 
-void Interface::squareClicked() {
-    QLabel* clickedSquare = qobject_cast<QLabel*>(sender()); // Get the clicked square
+void Interface::squareClicked(ChessSquare *square) {
+    if (!square)
+        return;
 
-    if (!clickedSquare) return;
-
-    QString position = getPositionFromSquare(clickedSquare);
+    QString position = square->position();
 
     // Click handling logic
     // 1. If a piece is selected and the clicked square is a valid move, make the move.
@@ -98,13 +96,13 @@ void Interface::squareClicked() {
 
     static QString selectedPosition = "";
     if (selectedPosition.isEmpty()) {
-        if (m_game.m_chessboard.getFigureAt(position) != nullptr) {
+        if (m_game.getFigureAt(position) != nullptr) {
             selectedPosition = position;
             highlightPossibleMoves(selectedPosition);
         }
     } else {
         QString move = selectedPosition + " " + position;
-        if (m_game.isValidMove(move)) {
+        if (m_game.isValidMove(selectedPosition, position)) {
             m_game.makeMove(move);
             updateChessboard();
         }
@@ -143,7 +141,7 @@ void Interface::clearSelection() {
 }
 
 void Interface::highlightPossibleMoves(const QString& position) {
-    QVector<QString> moves = m_game.m_chessboard.getAvailableMovesForFigure(position);
+    QVector<QString> moves = m_game.getAvailableMovesForFigure(position);
     for (const QString& move : moves) {
         // Highlight the possible move squares
         int row = 8 - (move[1].digitValue());
@@ -152,15 +150,8 @@ void Interface::highlightPossibleMoves(const QString& position) {
     }
 }
 
-QString Interface::getPositionFromSquare(QLabel *square) const {
-    for (int row = 0; row < 8; ++row) {
-        for (int col = 0; col < 8; ++col) {
-            if (m_squares[row][col] == square) {
-                char file = 'a' + col;
-                char rank = '8' - row;
-                return QString(QChar(file)) + QString::number(rank);
-            }
-        }
-    }
-    return ""; // Return an empty string if not found
+QString Interface::getPositionFromSquare(ChessSquare *square) const {
+    if (!square)
+        return "";
+    return square->position();
 }

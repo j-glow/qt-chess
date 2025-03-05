@@ -3,9 +3,9 @@
 
 #include <QMainWindow>
 #include <QGridLayout>
-#include <QLabel>
 #include <QPushButton>
-#include "game.h" // Assuming you have a Game class
+#include "game.h"
+#include "chesssquare.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -13,8 +13,7 @@ class Interface;
 }
 QT_END_NAMESPACE
 
-class Interface : public QMainWindow
-{
+class Interface : public QMainWindow {
     Q_OBJECT
 
 public:
@@ -22,22 +21,22 @@ public:
     ~Interface();
 
 private slots:
-    void squareClicked(); // Handles square click events
-    void newGameClicked(); // Handles new game button click
-    void quitGameClicked(); // Handles quit game button click
+    void squareClicked(ChessSquare *square);
+    void newGameClicked();
+    void quitGameClicked();
 
 private:
-    Ui::Interface *ui; // Pointer to the UI class (if using Qt Designer)
-    QGridLayout *m_chessboardLayout; // Layout for the chessboard
-    QLabel *m_squares[8][8]; // 2D array of labels representing the chessboard squares
-    Game m_game; // Game logic object
-    QPushButton *m_newGameButton; // Button to start a new game
-    QPushButton *m_quitGameButton; // Button to quit the game
+    Ui::Interface *ui;
+    QGridLayout *m_chessboardLayout;
+    ChessSquare *m_squares[8][8];
+    Game m_game;
+    QPushButton *m_newGameButton;
+    QPushButton *m_quitGameButton;
 
-    void initializeChessboard(); // Initializes the chessboard grid
-    void updateChessboard(); // Updates the chessboard display based on the game state
-    void clearSelection(); // Clears any square selections
-    void highlightPossibleMoves(const QString& position); // Highlights possible moves for a selected piece
-    QString getPositionFromSquare(QLabel *square) const; // Gets the chessboard position (e.g., "a1") from a square
+    void initializeChessboard();
+    void updateChessboard();
+    void clearSelection();
+    void highlightPossibleMoves(const QString &position);
+    QString getPositionFromSquare(ChessSquare *square) const;
 };
 #endif // INTERFACE_H

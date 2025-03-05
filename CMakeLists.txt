@@ -21,6 +21,7 @@ qt_add_executable(Chess
     chessboard.h chessboard.cpp
     player.h player.cpp
     game.h game.cpp
+    chesssquare.h chesssquare.cpp
 )
 
 target_link_libraries(Chess
