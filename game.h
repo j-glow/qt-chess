@@ -1,0 +1,33 @@
+#ifndef GAME_H
+#define GAME_H
+
+#include "chessboard.h"
+#include "player.h"
+#include <QString>
+
+class Game {
+public:
+    Game();
+    ~Game();
+
+    void startGame();
+    void endGame();
+    void makeMove(const QString& move); // Takes move in algebraic notation (e.g., "a2 a4")
+    bool isGameOver() const;
+
+private:
+    Chessboard m_chessboard;
+    Player m_playerWhite;
+    Player m_playerBlack;
+    Player* m_currentPlayer; // Pointer to the current player
+    bool m_isGameOver;
+
+    void initializeGame();
+    void switchCurrentPlayer();
+    bool isValidMove(const QString& from, const QString& to) const;
+    void handleSpecialMoves(const QString& move);
+    void checkForCheckmate();
+    void checkForStalemate();
+};
+
+#endif // GAME_H
