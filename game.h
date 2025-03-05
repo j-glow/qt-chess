@@ -3,6 +3,7 @@
 
 #include "chessboard.h"
 #include "player.h"
+#include "figure.h"
 #include <QString>
 
 class Game {
@@ -14,6 +15,9 @@ public:
     void endGame();
     void makeMove(const QString& move); // Takes move in algebraic notation (e.g., "a2 a4")
     bool isGameOver() const;
+    Figure* getFigureAt(const QString& position) const;
+    bool isValidMove(const QString& from, const QString& to) const;
+    QVector<QString> getAvailableMovesForFigure(const QString& position) const;
 
 private:
     Chessboard m_chessboard;
@@ -24,7 +28,6 @@ private:
 
     void initializeGame();
     void switchCurrentPlayer();
-    bool isValidMove(const QString& from, const QString& to) const;
     void handleSpecialMoves(const QString& move);
     void checkForCheckmate();
     void checkForStalemate();

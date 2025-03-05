@@ -78,20 +78,4 @@ void Chessboard::movePiece(const QString& from, const QString& to) {
     }
 }
 
-bool Chessboard::isValidMove(const QString& from, const QString& to) const {
-    Figure* figure = getFigureAt(from);
-    if (figure == nullptr) {
-        return false; // No figure at the starting position
-    }
 
-    QVector<QString> availableMoves = figure->availableMoves(from);
-    return availableMoves.contains(to); // Check if the move is in the available moves
-}
-
-QVector<QString> Chessboard::getAvailableMovesForFigure(const QString& position) const {
-    Figure* figure = getFigureAt(position);
-    if (figure == nullptr) {
-        return QVector<QString>(); // Return an empty vector if there is no figure
-    }
-    return figure->availableMoves(position);
-}

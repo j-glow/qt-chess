@@ -60,10 +60,6 @@ void Game::switchCurrentPlayer() {
     }
 }
 
-bool Game::isValidMove(const QString& from, const QString& to) const {
-    return m_chessboard.isValidMove(from, to);
-}
-
 void Game::handleSpecialMoves(const QString& move) {
     // Implement logic for castling, en passant, pawn promotion
     // This will require more complex parsing of the move string
@@ -75,4 +71,26 @@ void Game::checkForCheckmate() {
 
 void Game::checkForStalemate() {
     // Implement stalemate detection logic
+}
+
+bool Game::isValidMove(const QString& from, const QString& to) const {
+    Figure* figure = m_chessboard.getFigureAt(from);
+    if (figure == nullptr) {
+        return false; // No figure at the starting position
+    }
+
+    QVector<QString> availableMoves = figure->availableMoves(from);
+    return availableMoves.contains(to); // Check if the move is in the available moves
+}
+
+QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const {
+    Figure* figure = m_chessboard.getFigureAt(position);
+    if (figure == nullptr) {
+        return QVector<QString>(); // Return an empty vector if there is no figure
+    }
+    return figure->availableMoves(position);
+}
+
+Figure* Game::getFigureAt(const QString& position) const {
+    return m_chessboard.getFigureAt(position);
 }
