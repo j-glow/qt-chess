@@ -24,10 +24,14 @@ QVector<QString> Knight::availableMoves(const QString& position, const Chessboar
     for (const auto& offset : movesOffsets) {
         char newFile = file + offset.x();
         int newRank = rank + offset.y();
+        QString new_position = QString(QChar(newFile)) + QString::number(newRank);
 
         // Check if the new position is within the board bounds
         if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
-            moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
+            Figure* dest = board.getFigureAt(new_position);
+            // Can't jump on own pieces.
+            if (!dest || dest->getColor() != this->getColor())
+                moves.push_back(new_position);
         }
     }
 
