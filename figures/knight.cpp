@@ -1,10 +1,11 @@
 #include "knight.h"
+#include "chessboard.h"
 
 #include <QPoint>
 
 Knight::Knight(Color color) : Figure(color) {}
 
-QVector<QString> Knight::availableMoves(const QString& position) const {
+QVector<QString> Knight::availableMoves(const QString& position, const Chessboard& board) const {
     QVector<QString> moves;
 
     // Get the file and rank from the position

@@ -1,10 +1,11 @@
 #include "king.h"
+#include "chessboard.h"
 
 #include <QPoint>
 
 King::King(Color color) : Figure(color) {}
 
-QVector<QString> King::availableMoves(const QString& position) const {
+QVector<QString> King::availableMoves(const QString& position, const Chessboard& board) const {
     QVector<QString> moves;
 
     // Get the file and rank from the position
@@ -24,10 +25,23 @@ QVector<QString> King::availableMoves(const QString& position) const {
         char newFile = file + offset.x();
         int newRank = rank + offset.y();
 
-        // Check if the new position is within the board bounds
-        if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
-            moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
+        // Stop if we go out of bounds
+        if (newFile < 'a' || newFile > 'h' || newRank < 1 || newRank > 8) {
+            continue;
         }
+
+        QString new_position = QString(QChar(newFile)) + QString::number(newRank);            
+        Figure* dest = board.getFigureAt(new_position);
+
+        if (!dest)
+            moves.push_back(new_position);
+        else if(dest->getColor() != this->getColor()){
+            // If color of the figure is different, stop iterating but still add move
+            moves.push_back(new_position);
+            break;
+        }
+        else //Color is the same, so we can't "step" on the figure 
+            break;
     }
 
     return moves;

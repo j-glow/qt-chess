@@ -1,10 +1,11 @@
 #include "pawn.h"
+#include "chessboard.h"
 
 #include <QPoint>
 
 Pawn::Pawn(Color color) : Figure(color) {}
 
-QVector<QString> Pawn::availableMoves(const QString& position) const {
+QVector<QString> Pawn::availableMoves(const QString& position, const Chessboard& board) const {
     QVector<QString> moves;
 
     // Get the file and rank from the position

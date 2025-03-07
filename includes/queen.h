@@ -10,7 +10,7 @@ public:
     Queen(Color color);
     ~Queen() override = default;
 
-    QVector<QString> availableMoves(const QString& position) const override;
+    QVector<QString> availableMoves(const QString& position, const Chessboard& board) const override;
     QString getTypeString() const override;
 };
 

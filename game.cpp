@@ -79,7 +79,7 @@ bool Game::isValidMove(const QString& from, const QString& to) const {
         return false; // No figure at the starting position
     }
 
-    QVector<QString> availableMoves = figure->availableMoves(from);
+    QVector<QString> availableMoves = figure->availableMoves(from, m_chessboard);
     return availableMoves.contains(to); // Check if the move is in the available moves
 }
 
@@ -88,7 +88,7 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
     if (figure == nullptr) {
         return QVector<QString>(); // Return an empty vector if there is no figure
     }
-    return figure->availableMoves(position);
+    return figure->availableMoves(position, m_chessboard);
 }
 
 Figure* Game::getFigureAt(const QString& position) const {

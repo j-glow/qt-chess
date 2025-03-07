@@ -1,10 +1,11 @@
 #include "bishop.h"
+#include "chessboard.h"
 
 #include <QPoint>
 
 Bishop::Bishop(Color color) : Figure(color) {}
 
-QVector<QString> Bishop::availableMoves(const QString& position) const {
+QVector<QString> Bishop::availableMoves(const QString& position, const Chessboard& board) const {
     QVector<QString> moves;
 
     // Get the file and rank from the position
@@ -24,14 +25,24 @@ QVector<QString> Bishop::availableMoves(const QString& position) const {
             char newFile = file + step * dir.x();
             int newRank = rank + step * dir.y();
 
-            // Check if the new position is within the board bounds
-            if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
-                moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
-            } else {
-                // Stop if we go out of bounds
+            // Stop if we go out of bounds
+            if (newFile < 'a' || newFile > 'h' || newRank < 1 || newRank > 8) {
                 break;
             }
 
+            QString new_position = QString(QChar(newFile)) + QString::number(newRank);            
+            Figure* dest = board.getFigureAt(new_position);
+
+            if (!dest)
+                moves.push_back(new_position);
+            else if(dest->getColor() != this->getColor()){
+                // If color of the figure is different, stop iterating but still add move
+                moves.push_back(new_position);
+                break;
+            }
+            else //Color is the same, so we can't "step" on the figure 
+                break;
+                
         }
     }
 

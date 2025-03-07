@@ -4,6 +4,9 @@
 #include <QString>
 #include <QVector>
 
+class Chessboard;
+class Figure;
+
 enum class Color {
     WHITE = 0,
     BLACK
@@ -15,7 +18,7 @@ public:
     virtual ~Figure() = default;
 
     Color getColor() const;
-    virtual QVector<QString> availableMoves(const QString& position) const = 0;
+    virtual QVector<QString> availableMoves(const QString& position, const Chessboard& board) const = 0;
     virtual QString getTypeString() const = 0;
 
 protected:
