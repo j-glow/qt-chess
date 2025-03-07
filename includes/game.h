@@ -26,13 +26,14 @@ private:
     Player m_playerBlack;
     Player* m_currentPlayer; // Pointer to the current player
     bool m_isGameOver;
+    Player* m_winner;
 
     void initializeGame();
     void switchCurrentPlayer();
     void handleSpecialMoves(const QString& move);
-    void checkForCheckmate();
-    void checkForStalemate();
-    bool isPlayerInCheck(const Player* player) const;
+    bool checkForGameOver();
+    bool canPlayerMakeAnyLegalMove(Player* player) const;
+    bool isPlayerInCheck(const Chessboard& chessboard, const Player* player) const;
     QString getKingPosition(const Player* player) const;
 };
 
