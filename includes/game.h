@@ -31,6 +31,8 @@ private:
     void handleSpecialMoves(const QString& move);
     void checkForCheckmate();
     void checkForStalemate();
+    bool isPlayerInCheck(const Player* player) const;
+    QString getKingPosition(const Player* player) const;
 };
 
 #endif // GAME_H

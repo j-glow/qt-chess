@@ -8,6 +8,8 @@
 class Chessboard {
 public:
     Chessboard();
+    Chessboard(const Chessboard& other); // Copy constructor
+    Chessboard& operator=(const Chessboard& other); // Copy assignment operator
     ~Chessboard();
 
     void initializeBoard();

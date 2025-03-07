@@ -75,12 +75,27 @@ void Game::checkForStalemate() {
 
 bool Game::isValidMove(const QString& from, const QString& to) const {
     Figure* figure = m_chessboard.getFigureAt(from);
-    if (figure == nullptr) {
+    if (!figure) {
         return false; // No figure at the starting position
     }
 
     QVector<QString> availableMoves = figure->availableMoves(from, m_chessboard);
-    return availableMoves.contains(to); // Check if the move is in the available moves
+    if (!availableMoves.contains(to)) {
+        return false; // The move is not in the figure's available moves
+    }
+
+    // 1. Temporarily make the move
+    Chessboard tempBoard = m_chessboard; // Create a temporary board
+    tempBoard.movePiece(from, to);
+
+    // 2. Check if the move leaves the current player's king in check
+    const Player* currentPlayer = (m_currentPlayer == &m_playerWhite) ? &m_playerWhite : &m_playerBlack; // Get the current player
+    if (isPlayerInCheck(currentPlayer)) {
+        return false; // The move leaves the king in check, so it's invalid
+    }
+
+    // 3. The move is valid (it's in available moves and doesn't cause check)
+    return true;
 }
 
 QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const {
@@ -93,4 +108,38 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
 
 Figure* Game::getFigureAt(const QString& position) const {
     return m_chessboard.getFigureAt(position);
+}
+
+bool Game::isPlayerInCheck(const Player* player) const {
+    // 1. Find the player's King
+    QString kingPosition = getKingPosition(player);
+
+    // 2. Check if any opponent's piece can attack the King
+    const Player* opponent = (player == &m_playerWhite) ? &m_playerBlack : &m_playerWhite;
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            QString position = QString(QChar('a' + col)) + QString::number(8 - row);
+            Figure* figure = m_chessboard.getFigureAt(position);
+            if (figure && figure->getColor() == opponent->getColor()) {
+                QVector<QString> availableMoves = figure->availableMoves(position, m_chessboard);
+                if (availableMoves.contains(kingPosition)) {
+                    return true; // King is in check
+                }
+            }
+        }
+    }
+    return false; // King is not in check
+}
+
+QString Game::getKingPosition(const Player* player) const {
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            QString position = QString(QChar('a' + col)) + QString::number(8 - row);
+            Figure* figure = m_chessboard.getFigureAt(position);
+            if (figure && figure->getColor() == player->getColor() && figure->getTypeString() == "king") {
+                return position;
+            }
+        }
+    }
+    return ""; // Should not happen, but handle it anyway
 }
