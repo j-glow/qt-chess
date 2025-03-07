@@ -17,19 +17,19 @@ QVector<QString> Pawn::availableMoves(const QString& position, const Chessboard&
     // 1. One square forward
     char newFile = file;
     int newRank = rank + direction;
-    if (newRank >= 1 && newRank <= 8) {
-        moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
-        // TODO: Add a check here to see if the square is occupied. If it is, the pawn cannot move there.
+    QString new_position = QString(QChar(newFile)) + QString::number(newRank);
+    if (newRank >= 1 && newRank <= 8 && !board.getFigureAt(new_position)) {
+        moves.push_back(new_position);
     }
 
-
     // 2. Two squares forward (only on the starting rank)
-    if ((m_color == Color::WHITE && rank == 2) || (m_color == Color::BLACK && rank == 7)) {
+    // If moves is empty, it means that the first square is occupied, hence can't move 2
+    if (moves.size() && (m_color == Color::WHITE && rank == 2) || (m_color == Color::BLACK && rank == 7)) {
         newFile = file;
         newRank = rank + 2 * direction;
-        if (newRank >= 1 && newRank <= 8) {
-             moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
-            // TODO: Add a check here to see if both squares in front are unoccupied.
+        QString new_position = QString(QChar(newFile)) + QString::number(newRank);
+        if (newRank >= 1 && newRank <= 8 && !board.getFigureAt(new_position)) {
+            moves.push_back(new_position);
         }
     }
 
@@ -40,13 +40,15 @@ QVector<QString> Pawn::availableMoves(const QString& position, const Chessboard&
     for (const auto& offset : captureOffsets) {
         newFile = file + offset.x();
         newRank = rank + offset.y();
+        QString new_position = QString(QChar(newFile)) + QString::number(newRank);
         if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
-            moves.push_back(QString(QChar(newFile)) + QString::number(newRank));
-            // TODO: Add a check here to see if there is an enemy piece on the diagonal square.
+            if (board.getFigureAt(new_position))
+                moves.push_back(new_position);
         }
     }
 
-    // TODO: Add en passant and pawn promotion logic here
+    // En passant and promotion logic will be added to game engine, as it reuires knowledge
+    // of the last move and changing of the figure type (out of scope for pawn class)
 
     return moves;
 }
