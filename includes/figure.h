@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QPoint>
 
 class Chessboard;
 class Figure;
@@ -23,6 +24,7 @@ public:
 
 protected:
     Color m_color;
+    QVector<QString> iterateDirections(QVector<QPoint>& directions, int range, const QString& position, const Chessboard& board) const;
 };
 
 #endif // FIGURE_H
