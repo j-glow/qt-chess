@@ -10,21 +10,27 @@ qt_add_resources(RESOURCES icons.qrc)
 qt_add_executable(Chess
     WIN32 MACOSX_BUNDLE
     main.cpp
-    interface.cpp
-    interface.h
+    includes/interface.h    interface.cpp
     interface.ui
     ${RESOURCES}
-    figure.h figure.cpp
-    king.h king.cpp
-    queen.h queen.cpp
-    bishop.h bishop.cpp
-    rook.h rook.cpp
-    knight.h knight.cpp
-    pawn.h pawn.cpp
-    chessboard.h chessboard.cpp
-    player.h player.cpp
-    game.h game.cpp
-    chesssquare.h chesssquare.cpp
+
+    includes/figure.h       figure.cpp
+    includes/chessboard.h   chessboard.cpp
+    includes/player.h       player.cpp
+    includes/game.h         game.cpp
+    includes/chesssquare.h  chesssquare.cpp
+
+    includes/king.h         figures/king.cpp
+    includes/queen.h        figures/queen.cpp
+    includes/bishop.h       figures/bishop.cpp
+    includes/rook.h         figures/rook.cpp
+    includes/knight.h       figures/knight.cpp
+    includes/pawn.h         figures/pawn.cpp
+)
+
+target_include_directories(Chess
+    PRIVATE
+        includes
 )
 
 target_link_libraries(Chess

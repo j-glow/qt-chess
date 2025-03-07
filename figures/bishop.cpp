@@ -32,8 +32,6 @@ QVector<QString> Bishop::availableMoves(const QString& position) const {
                 break;
             }
 
-            // TODO: Add logic to check if the path is blocked by another piece.
-            // If the path is blocked, you should also break here.
         }
     }
 
