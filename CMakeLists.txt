@@ -5,12 +5,15 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
 
+qt_add_resources(RESOURCES icons.qrc)
+
 qt_add_executable(Chess
     WIN32 MACOSX_BUNDLE
     main.cpp
     interface.cpp
     interface.h
     interface.ui
+    ${RESOURCES}
     figure.h figure.cpp
     king.h king.cpp
     queen.h queen.cpp

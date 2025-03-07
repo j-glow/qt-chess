@@ -72,7 +72,7 @@ void Interface::updateChessboard()
             QString position = m_squares[row][col]->position();
             Figure* figure = m_game.getFigureAt(position);
             if (figure) {
-                QString iconPath = ":/icons/";
+                QString iconPath = "://icons/";
                 iconPath += QString::fromStdString(figure->getColor() == Color::WHITE ? "w" : "b");
                 iconPath += figure->getTypeString() + ".png";
                 m_squares[row][col]->setPixmap(QPixmap(iconPath).scaled(QSize(50, 50), Qt::KeepAspectRatio));
