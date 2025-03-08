@@ -42,7 +42,8 @@ QVector<QString> Pawn::availableMoves(const QString& position, const Chessboard&
         newRank = rank + offset.y();
         QString new_position = QString(QChar(newFile)) + QString::number(newRank);
         if (newFile >= 'a' && newFile <= 'h' && newRank >= 1 && newRank <= 8) {
-            if (board.getFigureAt(new_position))
+            Figure* target = board.getFigureAt(new_position);
+            if (target && target->getColor() != this->getColor())
                 moves.push_back(new_position);
         }
     }
