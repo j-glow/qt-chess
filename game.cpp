@@ -75,26 +75,23 @@ void Game::checkForStalemate() {
 
 bool Game::isValidMove(const QString& from, const QString& to) const {
     Figure* figure = m_chessboard.getFigureAt(from);
-    if (!figure) {
+    if (!figure)
         return false; // No figure at the starting position
-    }
 
     QVector<QString> availableMoves = figure->availableMoves(from, m_chessboard);
-    if (!availableMoves.contains(to)) {
+    if (!availableMoves.contains(to))
         return false; // The move is not in the figure's available moves
-    }
 
-    // 1. Temporarily make the move
+    // Temporarily make the move
     Chessboard tempBoard = m_chessboard; // Create a temporary board
     tempBoard.movePiece(from, to);
 
     // 2. Check if the move leaves the current player's king in check
-    const Player* currentPlayer = (m_currentPlayer == &m_playerWhite) ? &m_playerWhite : &m_playerBlack; // Get the current player
+    const Player* currentPlayer = (m_currentPlayer == &m_playerWhite) ? &m_playerWhite : &m_playerBlack;
     if (isPlayerInCheck(currentPlayer)) {
         return false; // The move leaves the king in check, so it's invalid
-    }
 
-    // 3. The move is valid (it's in available moves and doesn't cause check)
+    // The move is valid (it's in available moves and doesn't cause check)
     return true;
 }
 
@@ -103,6 +100,10 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
     if (figure == nullptr) {
         return QVector<QString>(); // Return an empty vector if there is no figure
     }
+
+    if (figure->getColor() != m_currentPlayer->getColor())
+        return QVector<QString>(); // Can't move other color figure
+
     return figure->availableMoves(position, m_chessboard);
 }
 
