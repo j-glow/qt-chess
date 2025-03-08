@@ -1,5 +1,6 @@
 #include "interface.h"
 #include "ui_interface.h"
+#include "figure.h"
 
 #include <QMessageBox>
 
@@ -96,7 +97,8 @@ void Interface::squareClicked(ChessSquare *square) {
 
     static QString selectedPosition = "";
     if (selectedPosition.isEmpty()) {
-        if (m_game.getFigureAt(position) != nullptr) {
+        Figure* clicked = m_game.getFigureAt(position);
+        if (clicked && m_game.currentPlayerColor() == clicked->getColor()) {
             selectedPosition = position;
             highlightPossibleMoves(selectedPosition);
         }

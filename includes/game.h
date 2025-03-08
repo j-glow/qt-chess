@@ -18,6 +18,7 @@ public:
     Figure* getFigureAt(const QString& position) const;
     bool isValidMove(const QString& from, const QString& to) const;
     QVector<QString> getAvailableMovesForFigure(const QString& position) const;
+    Color currentPlayerColor() const;
 
 private:
     Chessboard m_chessboard;

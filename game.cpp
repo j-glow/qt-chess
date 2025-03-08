@@ -107,6 +107,11 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
     return figure->availableMoves(position, m_chessboard);
 }
 
+Color Game::currentPlayerColor() const {
+    return m_currentPlayer->getColor();
+}
+
+
 Figure* Game::getFigureAt(const QString& position) const {
     return m_chessboard.getFigureAt(position);
 }
