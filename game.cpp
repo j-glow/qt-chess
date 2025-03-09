@@ -8,7 +8,7 @@ Game::Game() :
     m_playerBlack(Color::BLACK),
     m_currentPlayer(&m_playerWhite) // White player starts
 {
-    initializeGame();
+    startGame();
 }
 
 Game::~Game() {
@@ -17,6 +17,8 @@ Game::~Game() {
 void Game::startGame() {
     m_chessboard.initializeBoard();
     m_currentPlayer = &m_playerWhite; // White player starts
+    m_whiteCastlingOptions = CastlingOptions::BOTH;
+    m_blackCastlingOptions = CastlingOptions::BOTH;
 }
 
 void Game::endGame() {
@@ -29,23 +31,47 @@ void Game::makeMove(const QString& move) {
     QString to = move.mid(3, 2);   // Extract "a4"
 
     if (isValidMove(from, to)) {
+        // If king moved, change castling options
+        if (m_chessboard.getFigureAt(from)->getTypeString() == "king"){
+            if (from == QString("e1"))
+                m_whiteCastlingOptions = CastlingOptions::NONE;
+            if (from == QString("e8"))
+                m_blackCastlingOptions = CastlingOptions::NONE;
+        } // else if rook moved, change castling options
+        else if (m_chessboard.getFigureAt(from)->getTypeString() == "rook"){
+            if (from == QString("a1"))
+                m_whiteCastlingOptions = static_cast<CastlingOptions>(m_whiteCastlingOptions & CastlingOptions::KINGSIDE);
+            if (from == QString("h1"))
+                m_whiteCastlingOptions = static_cast<CastlingOptions>(m_whiteCastlingOptions & CastlingOptions::QUEENSIDE);
+            if (from == QString("a8"))
+                m_blackCastlingOptions = static_cast<CastlingOptions>(m_blackCastlingOptions & CastlingOptions::KINGSIDE);
+            if (from == QString("h8"))
+                m_blackCastlingOptions = static_cast<CastlingOptions>(m_blackCastlingOptions & CastlingOptions::QUEENSIDE);
+        }
+
+        // If it's castling move the rook as well
+        if(m_chessboard.getFigureAt(from)->getTypeString() == "king"){
+            int row = (m_currentPlayer->getColor() == Color::WHITE) ? 1 : 8; // Determine the correct row
+            if (to == QString("g") + QString::number(row))
+                m_chessboard.movePiece(QString("h") + QString::number(row), QString("f") + QString::number(row));
+            if (to == QString("c") + QString::number(row))
+                m_chessboard.movePiece(QString("a") + QString::number(row), QString("d") + QString::number(row));
+        }
+
         m_chessboard.movePiece(from, to);
 
+        // Pawn promotion
         if (m_chessboard.getFigureAt(to)->getTypeString()=="pawn") {
             if(m_currentPlayer->getColor() == Color::WHITE && to.endsWith("8") ||
                m_currentPlayer->getColor() == Color::WHITE && to.endsWith("1"))
                 promotePawn(to);
         }
 
+        // Switch player and check if game can continue
         switchCurrentPlayer();
         if(checkForGameOver())
             endGame();
     }
-}
-
-void Game::initializeGame() {
-    m_chessboard.initializeBoard();
-    m_currentPlayer = &m_playerWhite; // White player starts
 }
 
 void Game::switchCurrentPlayer() {
@@ -73,7 +99,7 @@ bool Game::canPlayerMakeAnyLegalMove(Player* player) const {
             QString position = QString(QChar('a' + col)) + QString::number(8 - row);
             Figure* figure = temp_board.getFigureAt(position);
             if (figure && figure->getColor() == player->getColor()) {
-                QVector<QString> availableMoves = figure->availableMoves(position, temp_board);
+                QVector<QString> availableMoves = getAvailableMovesForFigure(position);
                 for (const QString& move : availableMoves) {
                     // 1. Create a temporary copy of the dest figure
                     Figure* destFigure = temp_board.getFigureAt(move);
@@ -104,7 +130,7 @@ bool Game::isValidMove(const QString& from, const QString& to) const {
     if (!figure)
         return false; // No figure at the starting position
 
-    QVector<QString> availableMoves = figure->availableMoves(from, m_chessboard);
+    QVector<QString> availableMoves = getAvailableMovesForFigure(from);
     if (!availableMoves.contains(to))
         return false; // The move is not in the figure's available moves
 
@@ -129,7 +155,25 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
     if (figure->getColor() != m_currentPlayer->getColor())
         return QVector<QString>(); // Can't move other color figure
 
-    return figure->availableMoves(position, m_chessboard);
+    // Get default moves for a figure
+    QVector<QString> availableMoves = figure->availableMoves(position, m_chessboard);
+
+    // Add castling to possible moves
+    if (figure->getTypeString() == "king") {
+        int row = (m_currentPlayer->getColor() == Color::WHITE) ? 1 : 8; // Determine the correct row
+        CastlingOptions options = isCastlingAllowed(m_currentPlayer->getColor());
+
+        if (position == QString("e") + QString::number(row)){
+            if(options & CastlingOptions::KINGSIDE)
+                availableMoves.push_back(QString("g") + QString::number(row));
+            if(options & CastlingOptions::QUEENSIDE)
+                availableMoves.push_back(QString("c") + QString::number(row));
+        }
+    }
+
+    // TODO: Add en passant
+
+    return availableMoves;
 }
 
 Color Game::currentPlayerColor() const {
@@ -142,24 +186,25 @@ Figure* Game::getFigureAt(const QString& position) const {
 }
 
 bool Game::isPlayerInCheck(const Chessboard& chessboard, const Player* player) const {
-    // 1. Find the player's King
     QString kingPosition = getKingPosition(chessboard, player);
+    return isSquareAttacked(chessboard, kingPosition, player);
+}
 
-    // 2. Check if any opponent's piece can attack the King
+bool Game::isSquareAttacked(const Chessboard& board, const QString& position, const Player* player) const {
     const Player* opponent = (player == &m_playerWhite) ? &m_playerBlack : &m_playerWhite;
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
             QString position = QString(QChar('a' + col)) + QString::number(8 - row);
-            Figure* figure = chessboard.getFigureAt(position);
+            Figure* figure = board.getFigureAt(position);
             if (figure && figure->getColor() == opponent->getColor()) {
-                QVector<QString> availableMoves = figure->availableMoves(position, chessboard);
-                if (availableMoves.contains(kingPosition)) {
-                    return true; // King is in check
+                QVector<QString> availableMoves = figure->availableMoves(position, board);
+                if (availableMoves.contains(position)) {
+                    return true;
                 }
             }
         }
     }
-    return false; // King is not in check
+    return false;
 }
 
 QString Game::getKingPosition(const Chessboard& chessboard, const Player* player) const {
@@ -188,4 +233,51 @@ void Game::promotePawn(const QString& position) {
         m_chessboard.setFigureAt(position, newFigure);
         delete pawn; // Remove the pawn
     }
+}
+
+CastlingOptions Game::isCastlingAllowed(Color color) const {
+    CastlingOptions options = CastlingOptions::NONE;
+    int row = (color == Color::WHITE) ? 1 : 8; // Determine the correct row
+    const Player* opponent = (color == Color::WHITE) ? &m_playerBlack : &m_playerWhite;
+
+    // Kingside check
+    if ((color == Color::WHITE && (m_whiteCastlingOptions & CastlingOptions::KINGSIDE)) ||
+        (color == Color::BLACK && (m_blackCastlingOptions & CastlingOptions::KINGSIDE))) {
+        // Check if squares are empty
+        if (m_chessboard.getFigureAt(QString("f") + QString::number(row)) == nullptr &&
+            m_chessboard.getFigureAt(QString("g") + QString::number(row)) == nullptr) {
+            // Check if king is in check or passes through check
+            QString kingStartPos = QString("e") + QString::number(row);
+            QString kingMidPos = QString("f") + QString::number(row);
+            QString kingEndPos = QString("g") + QString::number(row);
+
+            if (!isSquareAttacked(m_chessboard, kingStartPos, opponent) &&
+                !isSquareAttacked(m_chessboard, kingMidPos, opponent) &&
+                !isSquareAttacked(m_chessboard, kingEndPos, opponent)) {
+                options = static_cast<CastlingOptions>(options | CastlingOptions::KINGSIDE);
+            }
+        }
+    }
+
+    // Queenside check
+    if ((color == Color::WHITE && (m_whiteCastlingOptions & CastlingOptions::QUEENSIDE)) ||
+        (color == Color::BLACK && (m_blackCastlingOptions & CastlingOptions::QUEENSIDE))) {
+        // Check if squares are empty
+        if (m_chessboard.getFigureAt(QString("b") + QString::number(row)) == nullptr &&
+            m_chessboard.getFigureAt(QString("c") + QString::number(row)) == nullptr &&
+            m_chessboard.getFigureAt(QString("d") + QString::number(row)) == nullptr) {
+            // Check if king is in check or passes through check
+            QString kingStartPos = QString("e") + QString::number(row);
+            QString kingMidPos = QString("d") + QString::number(row);
+            QString kingEndPos = QString("c") + QString::number(row);
+
+            if (!isSquareAttacked(m_chessboard, kingStartPos, opponent) &&
+                !isSquareAttacked(m_chessboard, kingMidPos, opponent) &&
+                !isSquareAttacked(m_chessboard, kingEndPos, opponent)) {
+                options = static_cast<CastlingOptions>(options | CastlingOptions::QUEENSIDE);
+            }
+        }
+    }
+
+    return options;
 }
