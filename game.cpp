@@ -6,8 +6,7 @@
 Game::Game() :
     m_playerWhite(Color::WHITE),
     m_playerBlack(Color::BLACK),
-    m_currentPlayer(&m_playerWhite), // White player starts
-    m_isGameOver(false)
+    m_currentPlayer(&m_playerWhite) // White player starts
 {
     initializeGame();
 }

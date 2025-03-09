@@ -25,7 +25,6 @@ private:
     Player m_playerWhite;
     Player m_playerBlack;
     Player* m_currentPlayer; // Pointer to the current player
-    bool m_isGameOver;
     Player* m_winner;
 
     void initializeGame();
