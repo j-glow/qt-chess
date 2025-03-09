@@ -112,8 +112,7 @@ bool Game::isValidMove(const QString& from, const QString& to) const {
     tempBoard.movePiece(from, to);
 
     // 2. Check if the move leaves the current player's king in check
-    const Player* currentPlayer = (m_currentPlayer == &m_playerWhite) ? &m_playerWhite : &m_playerBlack;
-    if (isPlayerInCheck(m_chessboard, currentPlayer))
+    if (isPlayerInCheck(tempBoard, m_currentPlayer))
         return false; // The move leaves the king in check, so it's invalid
 
     // The move is valid (it's in available moves and doesn't cause check)
@@ -143,7 +142,7 @@ Figure* Game::getFigureAt(const QString& position) const {
 
 bool Game::isPlayerInCheck(const Chessboard& chessboard, const Player* player) const {
     // 1. Find the player's King
-    QString kingPosition = getKingPosition(player);
+    QString kingPosition = getKingPosition(chessboard, player);
 
     // 2. Check if any opponent's piece can attack the King
     const Player* opponent = (player == &m_playerWhite) ? &m_playerBlack : &m_playerWhite;
@@ -162,11 +161,11 @@ bool Game::isPlayerInCheck(const Chessboard& chessboard, const Player* player) c
     return false; // King is not in check
 }
 
-QString Game::getKingPosition(const Player* player) const {
+QString Game::getKingPosition(const Chessboard& chessboard, const Player* player) const {
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
             QString position = QString(QChar('a' + col)) + QString::number(8 - row);
-            Figure* figure = m_chessboard.getFigureAt(position);
+            Figure* figure = chessboard.getFigureAt(position);
             if (figure && figure->getColor() == player->getColor() && figure->getTypeString() == "king") {
                 return position;
             }

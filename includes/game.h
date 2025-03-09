@@ -34,7 +34,7 @@ private:
     bool checkForGameOver();
     bool canPlayerMakeAnyLegalMove(Player* player) const;
     bool isPlayerInCheck(const Chessboard& chessboard, const Player* player) const;
-    QString getKingPosition(const Player* player) const;
+    QString getKingPosition(const Chessboard& chessboard, const Player* player) const;
     void promotePawn(const QString& position);
 };
 
