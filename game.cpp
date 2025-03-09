@@ -19,9 +19,8 @@ void Game::startGame() {
     m_currentPlayer = &m_playerWhite; // White player starts
 }
 
-#include <QDebug>
 void Game::endGame() {
-    qDebug() << "mate";
+    Interface::endGamePopup(m_winner); // Use the static method
 }
 
 void Game::makeMove(const QString& move) {
@@ -65,7 +64,7 @@ void Game::handleSpecialMoves(const QString& move) {
 bool Game::checkForGameOver() {
     if (!canPlayerMakeAnyLegalMove(m_currentPlayer)) {
         if (isPlayerInCheck(m_chessboard, m_currentPlayer))
-            m_winner = m_currentPlayer;
+            m_winner = (m_currentPlayer->getColor() == Color::WHITE) ? &m_playerBlack : &m_playerWhite;
         return true;
     }
     return false;

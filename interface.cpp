@@ -169,7 +169,6 @@ void Interface::squareClicked(ChessSquare *square) {
 
 void Interface::newGameClicked()
 {
-    m_game.endGame();
     m_game.startGame();
     updateChessboard();
 }
@@ -255,4 +254,18 @@ Figure* Interface::promoteWindow(Color color) {
 
     dialog.exec(); // Show the dialog
     return selectedFigure;
+}
+
+void Interface::endGamePopup(Player* winner) {
+    QString message;
+    if (winner == nullptr) {
+        message = "The game is a draw!";
+    } else if (winner->getColor() == Color::WHITE) {
+        message = "White wins!";
+    } else {
+        message = "Black wins!";
+    }
+
+    QMessageBox::information(nullptr, "Game Over", message);
+    // nullptr as parent, so the message box appears as a top-level window
 }

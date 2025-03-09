@@ -22,6 +22,7 @@ public:
     ~Interface();
 
     static Figure* promoteWindow(Color color);
+    static void endGamePopup(Player* winner);
 
 private slots:
     void squareClicked(ChessSquare *square);
