@@ -86,8 +86,9 @@ Interface::Interface(QWidget *parent)
     m_game.startGame();
     updateChessboard();
 
-    // Make window non-resizable
+    // Set window options
     setFixedSize(minimumSizeHint());
+    setWindowTitle("Chess");
 }
 
 Interface::~Interface()
