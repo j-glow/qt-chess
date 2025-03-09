@@ -14,38 +14,88 @@ Interface::Interface(QWidget *parent)
 {
     ui->setupUi(this);
 
-    // Initialize the interface
-    m_chessboardLayout = new QGridLayout;
-    initializeChessboard();
+    // Create main layouts
+    QVBoxLayout *mainLayout = new QVBoxLayout; // Main vertical layout
+    QHBoxLayout *bottomLayout = new QHBoxLayout;  // Bottom horizontal layout (buttons, etc.)
+    QGridLayout *boardLayout = new QGridLayout; // Layout for chessboard and markings
 
-    // Control buttons
+    // 1. Button Layout
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
     m_newGameButton = new QPushButton("New Game", this);
     m_quitGameButton = new QPushButton("Quit", this);
-
-    // Window layout
-    QWidget *centralWidget = new QWidget(this);
-    QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
-    mainLayout->addLayout(m_chessboardLayout);
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(m_newGameButton);
     buttonLayout->addWidget(m_quitGameButton);
-    mainLayout->addLayout(buttonLayout);
+
+    // 2. Chessboard Layout with Markings
+    QGridLayout *chessboardAndMarkingsLayout = new QGridLayout; // 3x3 grid
+
+    // Create individual layouts for markings and chessboard
+    QGridLayout *topMarkingsLayout = new QGridLayout;
+    QGridLayout *bottomMarkingsLayout = new QGridLayout;
+    QGridLayout *leftMarkingsLayout = new QGridLayout;
+    QGridLayout *rightMarkingsLayout = new QGridLayout;
+    QGridLayout *actualChessboardLayout = new QGridLayout; // For the squares
+
+    initializeChessboard(actualChessboardLayout); // Initialize chessboard squares
+
+    // Add column markings (a-h)
+    for (int col = 0; col < 8; ++col) {
+        QLabel *colLabelTop = new QLabel(QString(QChar('a' + col)));
+        colLabelTop->setAlignment(Qt::AlignCenter);
+        topMarkingsLayout->addWidget(colLabelTop, 0, col);
+
+        QLabel *colLabelBottom = new QLabel(QString(QChar('a' + col)));
+        colLabelBottom->setAlignment(Qt::AlignCenter);
+        bottomMarkingsLayout->addWidget(colLabelBottom, 0, col);
+    }
+
+    // Add row markings (1-8)
+    for (int row = 0; row < 8; ++row) {
+        QLabel *rowLabelLeft = new QLabel(QString::number(8 - row));
+        rowLabelLeft->setAlignment(Qt::AlignCenter);
+        leftMarkingsLayout->addWidget(rowLabelLeft, row, 0);
+
+        QLabel *rowLabelRight = new QLabel(QString::number(8 - row));
+        rowLabelRight->setAlignment(Qt::AlignCenter);
+        rightMarkingsLayout->addWidget(rowLabelRight, row, 0);
+    }
+
+    // Add layouts to chessboardAndMarkingsLayout (3x3 grid)
+    chessboardAndMarkingsLayout->addLayout(topMarkingsLayout, 0, 1);    // Top (columns)
+    chessboardAndMarkingsLayout->addLayout(leftMarkingsLayout, 1, 0);   // Left (rows)
+    chessboardAndMarkingsLayout->addLayout(actualChessboardLayout, 1, 1); // Center (chessboard)
+    chessboardAndMarkingsLayout->addLayout(rightMarkingsLayout, 1, 2);  // Right (rows)
+    chessboardAndMarkingsLayout->addLayout(bottomMarkingsLayout, 2, 1); // Bottom (columns)
+
+    // Add layouts to the main layout
+    bottomLayout->addLayout(buttonLayout);
+    boardLayout->addLayout(chessboardAndMarkingsLayout, 0, 0);
+
+    mainLayout->addLayout(boardLayout);
+    mainLayout->addLayout(bottomLayout);
+
+    // Central Widget Setup
+    QWidget *centralWidget = new QWidget(this);
+    centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
 
     // Connect signals and slots
     connect(m_newGameButton, &QPushButton::clicked, this, &Interface::newGameClicked);
     connect(m_quitGameButton, &QPushButton::clicked, this, &Interface::quitGameClicked);
 
-    m_game.startGame(); // Start a new game
-    updateChessboard(); // Update the display
+    m_game.startGame();
+    updateChessboard();
+
+    // Make window non-resizable
+    setFixedSize(minimumSizeHint());
 }
 
 Interface::~Interface()
 {
-    delete ui; // Delete UI pointer if using Qt Designer
+    delete ui;
 }
 
-void Interface::initializeChessboard()
+void Interface::initializeChessboard(QGridLayout *layout)
 {
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
@@ -53,7 +103,7 @@ void Interface::initializeChessboard()
             m_squares[row][col]->setMinimumSize(60, 60);
             m_squares[row][col]->setAlignment(Qt::AlignCenter);
             m_squares[row][col]->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-            m_chessboardLayout->addWidget(m_squares[row][col], row, col);
+            layout->addWidget(m_squares[row][col], row, col); // Use the passed layout
 
             // Set background color (chessboard pattern)
             if ((row + col) % 2 == 0) {
@@ -64,7 +114,7 @@ void Interface::initializeChessboard()
 
             // Connect the custom signal
             QString position = QString(QChar('a' + col)) + QString::number(8 - row);
-            m_squares[row][col]->setPosition(position); // Set the position
+            m_squares[row][col]->setPosition(position);
             connect(m_squares[row][col], &ChessSquare::squareClicked, this, &Interface::squareClicked);
         }
     }

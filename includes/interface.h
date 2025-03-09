@@ -36,7 +36,7 @@ private:
     QPushButton *m_newGameButton;
     QPushButton *m_quitGameButton;
 
-    void initializeChessboard();
+    void initializeChessboard(QGridLayout *layout);
     void updateChessboard();
     void clearSelection();
     void highlightPossibleMoves(const QString &position);
