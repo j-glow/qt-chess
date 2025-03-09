@@ -29,7 +29,6 @@ private:
 
     void initializeGame();
     void switchCurrentPlayer();
-    void handleSpecialMoves(const QString& move);
     bool checkForGameOver();
     bool canPlayerMakeAnyLegalMove(Player* player) const;
     bool isPlayerInCheck(const Chessboard& chessboard, const Player* player) const;

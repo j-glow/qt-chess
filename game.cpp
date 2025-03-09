@@ -56,11 +56,6 @@ void Game::switchCurrentPlayer() {
     }
 }
 
-void Game::handleSpecialMoves(const QString& move) {
-    // Implement logic for castling, en passant, pawn promotion
-    // This will require more complex parsing of the move string
-}
-
 bool Game::checkForGameOver() {
     if (!canPlayerMakeAnyLegalMove(m_currentPlayer)) {
         if (isPlayerInCheck(m_chessboard, m_currentPlayer))
@@ -71,24 +66,32 @@ bool Game::checkForGameOver() {
 }
 
 bool Game::canPlayerMakeAnyLegalMove(Player* player) const {
+    Chessboard temp_board = m_chessboard;
+
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
             QString position = QString(QChar('a' + col)) + QString::number(8 - row);
-            Figure* figure = m_chessboard.getFigureAt(position);
+            Figure* figure = temp_board.getFigureAt(position);
             if (figure && figure->getColor() == player->getColor()) {
-                QVector<QString> availableMoves = figure->availableMoves(position, m_chessboard);
+                QVector<QString> availableMoves = figure->availableMoves(position, temp_board);
                 for (const QString& move : availableMoves) {
-                    // 1. Create a temporary copy of the chessboard
-                    Chessboard tempBoard = m_chessboard;
+                    // 1. Create a temporary copy of the dest figure
+                    Figure* destFigure = temp_board.getFigureAt(move);
+                    temp_board.setFigureAt(move, nullptr);
 
                     // 2. Temporarily make the move on the copy
-                    tempBoard.movePiece(position, move);
+                    temp_board.movePiece(position, move);
 
                     // 3. Check if the move leaves the player's king in check
-                    if (!isPlayerInCheck(tempBoard, player)) {
+                    if (!isPlayerInCheck(temp_board, player)) {
+                        temp_board.movePiece(move, position);
+                        temp_board.setFigureAt(move, destFigure);
                         return true; // Found a legal move
                     }
-                    // No need to "undo" the move, tempBoard will be destroyed
+
+                    // 4. Undo the move
+                    temp_board.movePiece(move, position);
+                    temp_board.setFigureAt(move, destFigure);
                 }
             }
         }
