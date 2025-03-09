@@ -1,4 +1,5 @@
 #include "game.h"
+#include "interface.h"
 
 #include <QMessageBox>
 
@@ -31,12 +32,16 @@ void Game::makeMove(const QString& move) {
 
     if (isValidMove(from, to)) {
         m_chessboard.movePiece(from, to);
+
+        if (m_chessboard.getFigureAt(to)->getTypeString()=="pawn") {
+            if(m_currentPlayer->getColor() == Color::WHITE && to.endsWith("8") ||
+               m_currentPlayer->getColor() == Color::WHITE && to.endsWith("1"))
+                promotePawn(to);
+        }
+
         switchCurrentPlayer();
         if(checkForGameOver())
             endGame();
-    } else {
-        // Display an error message to the user (e.g., "Invalid move")
-        QMessageBox::warning(nullptr, "Invalid Move", "That is not a valid move.");
     }
 }
 
@@ -168,4 +173,19 @@ QString Game::getKingPosition(const Player* player) const {
         }
     }
     return ""; // Should not happen, but handle it anyway
+}
+
+void Game::promotePawn(const QString& position) {
+    Figure* pawn = m_chessboard.getFigureAt(position);
+    if (!pawn || pawn->getTypeString() != "pawn") {
+        return; // Or handle this error appropriately
+    }
+
+    Color color = pawn->getColor();
+    Figure* newFigure = Interface::promoteWindow(color);
+
+    if (newFigure) {
+        m_chessboard.setFigureAt(position, newFigure);
+        delete pawn; // Remove the pawn
+    }
 }

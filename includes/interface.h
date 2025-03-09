@@ -21,6 +21,8 @@ public:
     Interface(QWidget *parent = nullptr);
     ~Interface();
 
+    static Figure* promoteWindow(Color color);
+
 private slots:
     void squareClicked(ChessSquare *square);
     void newGameClicked();

@@ -1,6 +1,10 @@
 #include "interface.h"
 #include "ui_interface.h"
 #include "figure.h"
+#include "bishop.h"
+#include "knight.h"
+#include "rook.h"
+#include "queen.h"
 
 #include <QMessageBox>
 
@@ -156,4 +160,49 @@ QString Interface::getPositionFromSquare(ChessSquare *square) const {
     if (!square)
         return "";
     return square->position();
+}
+
+Figure* Interface::promoteWindow(Color color) {
+    QDialog dialog(nullptr);
+    dialog.setWindowTitle("Pawn Promotion");
+    QGridLayout layout(&dialog);
+
+    // Figure options (Queen, Rook, Bishop, Knight)
+    QStringList figureTypes = {"queen", "rook", "bishop", "knight"};
+    Figure* selectedFigure = nullptr;
+
+    for (int i = 0; i < figureTypes.size(); ++i) {
+        QString figureType = figureTypes[i];
+        // Construct the image path based on color and type
+        QString imagePath = QString("://icons/");
+        imagePath += (color == Color::WHITE ? "w" : "b") + figureType + ".png";
+        QPixmap pixmap(imagePath);
+        if (pixmap.isNull()) {
+            qDebug() << "Error loading image:" << imagePath;
+            continue; // Skip if image loading fails
+        }
+        QPushButton* button = new QPushButton();
+        // Scale the pixmap to 100x100
+        QPixmap scaledPixmap = pixmap.scaled(100, 100, Qt::KeepAspectRatio);
+        button->setIcon(QIcon(scaledPixmap));
+        button->setIconSize(scaledPixmap.size());
+        layout.addWidget(button, i / 2, i % 2); // Arrange in a grid
+
+        // Connect button click to promotion logic
+        QObject::connect(button, &QPushButton::clicked, [=, &dialog, &selectedFigure]() {
+            if (figureType == "queen") {
+                selectedFigure = new Queen(color);
+            } else if (figureType == "rook") {
+                selectedFigure = new Rook(color);
+            } else if (figureType == "bishop") {
+                selectedFigure = new Bishop(color);
+            } else if (figureType == "knight") {
+                selectedFigure = new Knight(color);
+            }
+            dialog.accept(); // Close the dialog
+        });
+    }
+
+    dialog.exec(); // Show the dialog
+    return selectedFigure;
 }
