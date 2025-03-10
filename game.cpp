@@ -236,10 +236,10 @@ bool Game::isSquareAttacked(const Chessboard& board, const QString& position, co
     const Player* opponent = (player == &m_playerWhite) ? &m_playerBlack : &m_playerWhite;
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
-            QString position = QString(QChar('a' + col)) + QString::number(8 - row);
-            Figure* figure = board.getFigureAt(position);
+            QString attacker_position = QString(QChar('a' + col)) + QString::number(8 - row);
+            Figure* figure = board.getFigureAt(attacker_position);
             if (figure && figure->getColor() == opponent->getColor()) {
-                QVector<QString> availableMoves = figure->availableMoves(position, board);
+                QVector<QString> availableMoves = figure->availableMoves(attacker_position, board);
                 if (availableMoves.contains(position)) {
                     return true;
                 }
