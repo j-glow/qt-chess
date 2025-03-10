@@ -19,6 +19,7 @@ void Game::startGame() {
     m_currentPlayer = &m_playerWhite; // White player starts
     m_whiteCastlingOptions = CastlingOptions::BOTH;
     m_blackCastlingOptions = CastlingOptions::BOTH;
+    m_lastMove = LastMove();
 }
 
 void Game::endGame() {
@@ -57,6 +58,28 @@ void Game::makeMove(const QString& move) {
             if (to == QString("c") + QString::number(row))
                 m_chessboard.movePiece(QString("a") + QString::number(row), QString("d") + QString::number(row));
         }
+
+        // En passant
+        if (m_lastMove.figure && m_lastMove.figure->getTypeString() == "pawn" &&
+            m_chessboard.getFigureAt(from)->getTypeString() == "pawn"){
+            if(m_currentPlayer->getColor() == Color::WHITE) {
+                if(from[1]=="5" && to[1]=="6" && m_lastMove.from[1]=="7" && m_lastMove.to[1]=="5" && m_lastMove.from[0] == to[0]){
+                    delete m_chessboard.getFigureAt(m_lastMove.to);
+                    m_chessboard.setFigureAt(m_lastMove.to, nullptr);
+                }
+            } // Color::BLACK
+            else {
+                if(from[1]=="4" && to[1]=="3" && m_lastMove.from[1]=="2" && m_lastMove.to[1]=="4" && m_lastMove.from[0] == to[0]){
+                    delete m_chessboard.getFigureAt(m_lastMove.to);
+                    m_chessboard.setFigureAt(m_lastMove.to, nullptr);
+                }
+            }
+        }
+
+        // Save last move for possible en passant
+        m_lastMove.figure = m_chessboard.getFigureAt(from);
+        m_lastMove.from = from;
+        m_lastMove.to = to;
 
         m_chessboard.movePiece(from, to);
 
@@ -171,7 +194,26 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
         }
     }
 
-    // TODO: Add en passant
+    // En passant
+    if (m_lastMove.figure && m_lastMove.figure->getTypeString() == "pawn" &&
+        m_chessboard.getFigureAt(position)->getTypeString() == "pawn"){
+        // WHITE
+        if(m_currentPlayer->getColor() == Color::WHITE) {
+            if(position[1]=="5" && m_lastMove.from[1] == "7" && m_lastMove.to[1]=="5"){
+                // If columns differ by one add en passant
+                int diff = m_lastMove.from[0].unicode() - position[0].unicode();
+                if (diff == 1 || diff == -1)
+                    availableMoves.push_back(QString(m_lastMove.from[0]) + QString("6"));
+            }
+        } // BLACK
+        else {
+            if(position[1]=="4" && m_lastMove.from[1] == "2" && m_lastMove.to[1]=="4"){
+                int diff = m_lastMove.from[0].unicode() - position[0].unicode();
+                if (diff == 1 || diff == -1)
+                    availableMoves.push_back(QString(m_lastMove.from[0]) + QString("3"));
+            }
+        }
+    }
 
     return availableMoves;
 }

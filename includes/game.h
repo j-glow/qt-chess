@@ -13,6 +13,12 @@ enum CastlingOptions {
     BOTH = KINGSIDE | QUEENSIDE
 };
 
+struct LastMove {
+    QString from = "";
+    QString to = "";
+    Figure* figure = nullptr;
+};
+
 class Game {
 public:
     Game();
@@ -33,6 +39,7 @@ private:
     Player m_playerBlack;
     Player* m_currentPlayer; // Pointer to the current player
     Player* m_winner;
+    LastMove m_lastMove;
     CastlingOptions m_whiteCastlingOptions = CastlingOptions::BOTH;
     CastlingOptions m_blackCastlingOptions = CastlingOptions::BOTH;
 
