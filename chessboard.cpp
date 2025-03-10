@@ -165,13 +165,17 @@ Figure* Chessboard::getFigureAt(const QString& position) const {
 void Chessboard::setFigureAt(const QString& position, Figure* figure) {
     int row = 8 - position[1].digitValue();
     int col = position[0].toLatin1() - 'a';
-
+    
     if (row >= 0 && row < 8 && col >= 0 && col < 8) {
         m_board[row][col] = figure;
     }
 }
 
 void Chessboard::movePiece(const QString& from, const QString& to) {
+    Figure* dest = getFigureAt(to);
+    if (dest)
+        delete dest;
+
     Figure* figure = getFigureAt(from);
     setFigureAt(from, nullptr);
     setFigureAt(to, figure);
