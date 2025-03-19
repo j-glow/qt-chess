@@ -6,13 +6,6 @@
 #include "figure.h"
 #include <QString>
 
-enum CastlingOptions {
-    NONE = 0b00,
-    KINGSIDE = 0b01,
-    QUEENSIDE = 0b10,
-    BOTH = KINGSIDE | QUEENSIDE
-};
-
 struct LastMove {
     QString from = "";
     QString to = "";
@@ -40,8 +33,6 @@ private:
     Player* m_currentPlayer; // Pointer to the current player
     Player* m_winner;
     LastMove m_lastMove;
-    CastlingOptions m_whiteCastlingOptions = CastlingOptions::BOTH;
-    CastlingOptions m_blackCastlingOptions = CastlingOptions::BOTH;
 
     void switchCurrentPlayer();
     bool checkForGameOver();
@@ -49,7 +40,7 @@ private:
     bool isPlayerInCheck(const Chessboard& chessboard, const Player* player) const;
     QString getKingPosition(const Chessboard& chessboard, const Player* player) const;
     void promotePawn(const QString& position);
-    enum CastlingOptions isCastlingAllowed(Color color) const;
+    enum CastlingOptions isCastlingAllowed() const;
     bool isSquareAttacked(const Chessboard& board, const QString& position, const Player* player) const;
 };
 

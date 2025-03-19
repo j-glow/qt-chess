@@ -17,8 +17,8 @@ Game::~Game() {
 void Game::startGame() {
     m_chessboard.initializeBoard();
     m_currentPlayer = &m_playerWhite; // White player starts
-    m_whiteCastlingOptions = CastlingOptions::BOTH;
-    m_blackCastlingOptions = CastlingOptions::BOTH;
+    m_playerWhite.setCastlingOptions(CastlingOptions::BOTH);
+    m_playerBlack.setCastlingOptions(CastlingOptions::BOTH);
     m_lastMove = LastMove();
 }
 
@@ -35,19 +35,19 @@ void Game::makeMove(const QString& move) {
         // If king moved, change castling options
         if (m_chessboard.getFigureAt(from)->getTypeString() == "king"){
             if (from == QString("e1"))
-                m_whiteCastlingOptions = CastlingOptions::NONE;
+                m_playerWhite.setCastlingOptions(CastlingOptions::NONE);
             if (from == QString("e8"))
-                m_blackCastlingOptions = CastlingOptions::NONE;
+                m_playerBlack.setCastlingOptions(CastlingOptions::NONE);
         } // else if rook moved, change castling options
         else if (m_chessboard.getFigureAt(from)->getTypeString() == "rook"){
             if (from == QString("a1"))
-                m_whiteCastlingOptions = static_cast<CastlingOptions>(m_whiteCastlingOptions & CastlingOptions::KINGSIDE);
+                m_playerWhite.setCastlingOptions(static_cast<CastlingOptions>(m_playerWhite.getCastlingOptions() & CastlingOptions::KINGSIDE));
             if (from == QString("h1"))
-                m_whiteCastlingOptions = static_cast<CastlingOptions>(m_whiteCastlingOptions & CastlingOptions::QUEENSIDE);
+                m_playerWhite.setCastlingOptions(static_cast<CastlingOptions>(m_playerWhite.getCastlingOptions() & CastlingOptions::QUEENSIDE));
             if (from == QString("a8"))
-                m_blackCastlingOptions = static_cast<CastlingOptions>(m_blackCastlingOptions & CastlingOptions::KINGSIDE);
+                m_playerBlack.setCastlingOptions(static_cast<CastlingOptions>(m_playerBlack.getCastlingOptions() & CastlingOptions::KINGSIDE));
             if (from == QString("h8"))
-                m_blackCastlingOptions = static_cast<CastlingOptions>(m_blackCastlingOptions & CastlingOptions::QUEENSIDE);
+                m_playerBlack.setCastlingOptions(static_cast<CastlingOptions>(m_playerBlack.getCastlingOptions() & CastlingOptions::QUEENSIDE));
         }
 
         // If it's castling move the rook as well
@@ -184,7 +184,7 @@ QVector<QString> Game::getAvailableMovesForFigure(const QString& position) const
     // Add castling to possible moves
     if (figure->getTypeString() == "king") {
         int row = (m_currentPlayer->getColor() == Color::WHITE) ? 1 : 8; // Determine the correct row
-        CastlingOptions options = isCastlingAllowed(m_currentPlayer->getColor());
+        CastlingOptions options = isCastlingAllowed();
 
         if (position == QString("e") + QString::number(row)){
             if(options & CastlingOptions::KINGSIDE)
@@ -277,14 +277,12 @@ void Game::promotePawn(const QString& position) {
     }
 }
 
-CastlingOptions Game::isCastlingAllowed(Color color) const {
+CastlingOptions Game::isCastlingAllowed() const {
     CastlingOptions options = CastlingOptions::NONE;
-    int row = (color == Color::WHITE) ? 1 : 8; // Determine the correct row
-    const Player* opponent = (color == Color::WHITE) ? &m_playerBlack : &m_playerWhite;
+    int row = (m_currentPlayer->getColor() == Color::WHITE) ? 1 : 8; // Determine the correct row
 
     // Kingside check
-    if ((color == Color::WHITE && (m_whiteCastlingOptions & CastlingOptions::KINGSIDE)) ||
-        (color == Color::BLACK && (m_blackCastlingOptions & CastlingOptions::KINGSIDE))) {
+    if (m_currentPlayer->getCastlingOptions() & CastlingOptions::KINGSIDE) {
         // Check if squares are empty
         if (m_chessboard.getFigureAt(QString("f") + QString::number(row)) == nullptr &&
             m_chessboard.getFigureAt(QString("g") + QString::number(row)) == nullptr) {
@@ -293,17 +291,16 @@ CastlingOptions Game::isCastlingAllowed(Color color) const {
             QString kingMidPos = QString("f") + QString::number(row);
             QString kingEndPos = QString("g") + QString::number(row);
 
-            if (!isSquareAttacked(m_chessboard, kingStartPos, opponent) &&
-                !isSquareAttacked(m_chessboard, kingMidPos, opponent) &&
-                !isSquareAttacked(m_chessboard, kingEndPos, opponent)) {
+            if (!isSquareAttacked(m_chessboard, kingStartPos, m_currentPlayer) &&
+                !isSquareAttacked(m_chessboard, kingMidPos, m_currentPlayer) &&
+                !isSquareAttacked(m_chessboard, kingEndPos, m_currentPlayer)) {
                 options = static_cast<CastlingOptions>(options | CastlingOptions::KINGSIDE);
             }
         }
     }
 
     // Queenside check
-    if ((color == Color::WHITE && (m_whiteCastlingOptions & CastlingOptions::QUEENSIDE)) ||
-        (color == Color::BLACK && (m_blackCastlingOptions & CastlingOptions::QUEENSIDE))) {
+    if (m_currentPlayer->getCastlingOptions() & CastlingOptions::QUEENSIDE) {
         // Check if squares are empty
         if (m_chessboard.getFigureAt(QString("b") + QString::number(row)) == nullptr &&
             m_chessboard.getFigureAt(QString("c") + QString::number(row)) == nullptr &&
@@ -313,9 +310,9 @@ CastlingOptions Game::isCastlingAllowed(Color color) const {
             QString kingMidPos = QString("d") + QString::number(row);
             QString kingEndPos = QString("c") + QString::number(row);
 
-            if (!isSquareAttacked(m_chessboard, kingStartPos, opponent) &&
-                !isSquareAttacked(m_chessboard, kingMidPos, opponent) &&
-                !isSquareAttacked(m_chessboard, kingEndPos, opponent)) {
+            if (!isSquareAttacked(m_chessboard, kingStartPos, m_currentPlayer) &&
+                !isSquareAttacked(m_chessboard, kingMidPos, m_currentPlayer) &&
+                !isSquareAttacked(m_chessboard, kingEndPos, m_currentPlayer)) {
                 options = static_cast<CastlingOptions>(options | CastlingOptions::QUEENSIDE);
             }
         }
